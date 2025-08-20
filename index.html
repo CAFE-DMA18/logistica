@@ -294,6 +294,15 @@
   </div>
 
   <script>
+    // Função para formatar números com separador de milhares e casas decimais
+    function formatarNumeroBrasileiro(numero, casasDecimais = 2) {
+      if (isNaN(numero) || numero === null) return '0,00';
+      
+      return numero.toFixed(casasDecimais)
+                  .replace('.', ',')
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    
     function formatarNumero(valor) {
       return valor.replace(/\D/g, '')
                   .replace(/(\d)(\d{2})$/, '$1,$2')
@@ -360,15 +369,15 @@
         <div class="cards">
           <div class="card">
             <h3>Valor da Nota</h3>
-            <p>R$ ${valorTotal.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(valorTotal)}</p>
           </div>
           <div class="card">
             <h3>Peso da Carga</h3>
-            <p>${pesoKg.toFixed(2).replace('.', ',')} kg</p>
+            <p>${formatarNumeroBrasileiro(pesoKg, 2)} kg</p>
           </div>
           <div class="card">
             <h3>KM Rodados</h3>
-            <p>${kms.toFixed(0)} km</p>
+            <p>${formatarNumeroBrasileiro(kms, 0)} km</p>
           </div>
         </div>
         
@@ -376,19 +385,19 @@
         <div class="cards">
           <div class="card">
             <h3>Valor do Frete</h3>
-            <p>R$ ${frete.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(frete)}</p>
           </div>
           <div class="card">
             <h3>Percentual</h3>
-            <p>${percentual.toFixed(2).replace('.', ',')}%</p>
+            <p>${formatarNumeroBrasileiro(percentual, 2)}%</p>
           </div>
           <div class="card">
             <h3>Frete por KM</h3>
-            <p>R$ ${fretePorKm.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(fretePorKm)}</p>
           </div>
           <div class="card">
             <h3>Frete por Tonelada</h3>
-            <p>R$ ${fretePorTonelada.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(fretePorTonelada)}</p>
           </div>
         </div>
       `;
@@ -444,11 +453,11 @@
         <div class="cards">
           <div class="card">
             <h3>Percentual de Vida Útil</h3>
-            <p>${percentualVidaUtil.toFixed(2).replace('.', ',')}%</p>
+            <p>${formatarNumeroBrasileiro(percentualVidaUtil, 2)}%</p>
           </div>
           <div class="card">
             <h3>Dias Restantes</h3>
-            <p>${Math.max(0, Math.ceil(diasRestantes))} dias</p>
+            <p>${formatarNumeroBrasileiro(Math.max(0, Math.ceil(diasRestantes)), 0)} dias</p>
           </div>
         </div>
         <div class="${politicaClass}">${politicaMsg}</div>
@@ -480,19 +489,19 @@
         <div class="cards">
           <div class="card">
             <h3>Valor dos Produtos</h3>
-            <p>R$ ${valorProdutos.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(valorProdutos)}</p>
           </div>
           <div class="card">
             <h3>Valor da Nota</h3>
-            <p>R$ ${valorNota.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(valorNota)}</p>
           </div>
           <div class="card">
             <h3>Preço Unitário</h3>
-            <p>R$ ${precoUnitario.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(precoUnitario)}</p>
           </div>
           <div class="card">
             <h3>Litragem</h3>
-            <p>${litragem} L</p>
+            <p>${formatarNumeroBrasileiro(litragem, 0)} L</p>
           </div>
         </div>
         
@@ -500,15 +509,15 @@
         <div class="cards">
           <div class="card">
             <h3>Desconto Aplicado</h3>
-            <p>${descontoPercentual.toFixed(2).replace('.', ',')}%</p>
+            <p>${formatarNumeroBrasileiro(descontoPercentual, 2)}%</p>
           </div>
           <div class="card">
             <h3>Preço Unitário c/ Desconto</h3>
-            <p>R$ ${precoComDesconto.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(precoComDesconto)}</p>
           </div>
           <div class="card">
             <h3>Valor Final</h3>
-            <p>R$ ${resultadoFinal.toFixed(2).replace('.', ',')}</p>
+            <p>R$ ${formatarNumeroBrasileiro(resultadoFinal)}</p>
           </div>
         </div>
       `;
