@@ -7,70 +7,94 @@
   <!-- Google Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      background: #f5f5f5;
-      color: #333;
-      display: flex;
     }
-
-    /* ===== MENU LATERAL ===== */
-    nav {
-      width: 220px;
-      background: #145a32;
-      height: 100vh;
+    
+    :root {
+      --primary-color: #145a32;
+      --secondary-color: #f1c40f;
+      --accent-color: #27ae60;
+      --light-color: #f5f5f5;
+      --dark-color: #333;
+      --card-color: #fdfdfd;
+      --error-color: #e74c3c;
+      --success-color: #2e7d32;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--light-color);
+      color: var(--dark-color);
       display: flex;
       flex-direction: column;
-      align-items: stretch;
-      padding-top: 20px;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+      min-height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
     }
-    nav button {
-      background: none;
+
+    /* ===== MENU SUPERIOR ===== */
+    .menu-top {
+      background: var(--primary-color);
+      display: flex;
+      justify-content: center;
+      padding: 10px 5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    
+    .menu-top button {
+      background: rgba(255, 255, 255, 0.1);
       border: none;
       color: #fff;
-      font-size: 1em;
+      font-size: 0.85em;
       font-weight: bold;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 20px;
-      text-align: left;
-      transition: background 0.3s;
+      gap: 5px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      transition: all 0.3s;
     }
-    nav button:hover {
-      background: #1e7c4a;
+    
+    .menu-top button:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
-    nav .material-icons {
-      font-size: 20px;
-      color: #f1c40f; /* dourado */
+    
+    .menu-top .material-icons {
+      font-size: 18px;
+      color: var(--secondary-color);
     }
 
     /* ===== CONTEÚDO PRINCIPAL ===== */
     .main {
       flex: 1;
-      padding: 20px;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .container {
       background: #fff;
-      padding: 30px;
+      padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 600px;
-      margin: 20px auto;
+      margin: 0 auto 15px auto;
       animation: fadeIn 0.5s ease-in-out;
+      flex-shrink: 0;
     }
 
     h1 {
       text-align: center;
-      font-size: 1.6em;
-      margin-bottom: 25px;
-      color: #145a32;
+      font-size: 1.4em;
+      margin-bottom: 20px;
+      color: var(--primary-color);
     }
 
     label {
@@ -78,83 +102,89 @@
       margin-bottom: 5px;
       display: block;
       font-weight: bold;
-      color: #333;
+      color: var(--dark-color);
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 12px;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 1em;
       background: #fafafa;
-      box-sizing: border-box;
       transition: all 0.3s ease;
     }
-    input:focus {
-      outline: 2px solid #27ae60;
+    
+    input:focus, select:focus {
+      outline: 2px solid var(--accent-color);
+      background: #fff;
     }
 
     button.calc {
       width: 100%;
       padding: 14px;
-      background: #27ae60;
+      background: var(--accent-color);
       color: white;
       border: none;
       border-radius: 8px;
-      font-size: 1.1em;
+      font-size: 1em;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-      margin-bottom: 15px;
+      transition: background 0.3s;
+      margin-top: 5px;
     }
+    
     button.calc:hover {
       background: #219150;
-      transform: scale(1.02);
     }
     
     button.toggle-form {
       width: 100%;
       padding: 10px;
-      background: #f1c40f;
-      color: #333;
+      background: var(--secondary-color);
+      color: var(--dark-color);
       border: none;
       border-radius: 8px;
       font-size: 0.9em;
       cursor: pointer;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
     /* ===== CARDS RESULTADO ===== */
     .cards {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-top: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
     }
+    
     .card {
-      background: #fdfdfd;
-      padding: 20px;
+      background: var(--card-color);
+      padding: 15px;
       border-radius: 10px;
       border: 1px solid #ddd;
       text-align: center;
       font-weight: bold;
-      transition: transform 0.2s, background 0.3s;
+      transition: transform 0.2s;
     }
+    
     .card:hover {
       transform: translateY(-3px);
-      background: #f8f9f6;
     }
+    
     .card h3 {
       margin: 0;
-      font-size: 0.9em;
-      color: #145a32;
+      font-size: 0.85em;
+      color: var(--primary-color);
     }
+    
     .card p {
       margin: 8px 0 0;
-      font-size: 1.2em;
-      color: #333;
+      font-size: 1.1em;
+      color: var(--dark-color);
+      font-weight: bold;
+      word-break: break-word;
     }
 
     .hidden { 
@@ -181,38 +211,215 @@
     
     /* Estilos para mensagens de política */
     .politica-msg {
-      margin-top: 20px;
+      margin-top: 15px;
       padding: 10px;
       border-radius: 8px;
       text-align: center;
       font-weight: bold;
-      grid-column: span 3;
+      grid-column: 1 / -1;
+      font-size: 0.9em;
     }
+    
     .politica-fora {
       background-color: #ffebee;
       color: #c62828;
       border: 1px solid #ef9a9a;
     }
+    
     .politica-dentro {
       background-color: #e8f5e9;
-      color: #2e7d32;
+      color: var(--success-color);
       border: 1px solid #a5d6a7;
     }
     
     .section-title {
       text-align: center;
-      font-size: 1.2em;
-      margin: 20px 0 10px;
-      color: #145a32;
+      font-size: 1.1em;
+      margin: 15px 0 10px;
+      color: var(--primary-color);
       padding-bottom: 5px;
-      border-bottom: 2px solid #f1c40f;
-      grid-column: span 3;
+      border-bottom: 2px solid var(--secondary-color);
+      grid-column: 1 / -1;
+    }
+    
+    /* Estilo para sugestões de cidades */
+    .suggestions {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      width: calc(100% - 24px);
+      z-index: 1000;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9em;
+    }
+    
+    .suggestion-item:hover {
+      background-color: #f0f0f0;
+    }
+    
+    .input-with-suggestions {
+      position: relative;
+    }
+    
+    /* Mensagem de erro */
+    .error-msg {
+      color: var(--error-color);
+      text-align: center;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    
+    /* Novo estilo para origem e destino */
+    .origem-destino {
+      background: #f8f9f6;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    
+    .origem-destino h3 {
+      margin: 0 0 10px 0;
+      font-size: 1em;
+      color: var(--primary-color);
+    }
+    
+    .origem-destino p {
+      font-size: 1.1em;
+      font-weight: bold;
+      margin: 0;
+      text-transform: uppercase;
+      color: var(--dark-color);
+    }
+    
+    .rota-seta {
+      margin: 0 10px;
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+    
+    /* Layout para telas maiores */
+    @media (min-width: 768px) {
+      body {
+        flex-direction: row;
+        max-height: 100vh;
+      }
+      
+      .menu-top {
+        width: 220px;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+        flex-wrap: nowrap;
+        gap: 0;
+        overflow-y: auto;
+      }
+      
+      .menu-top button {
+        border-radius: 0;
+        padding: 15px 20px;
+        justify-content: flex-start;
+        font-size: 0.95em;
+      }
+      
+      .main {
+        padding: 25px;
+        flex: 1;
+        overflow-y: auto;
+      }
+      
+      .container {
+        max-width: 700px;
+        padding: 25px;
+        margin-bottom: 20px;
+      }
+      
+      h1 {
+        font-size: 1.6em;
+      }
+      
+      .cards {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 15px;
+      }
+      
+      .origem-destino {
+        padding: 20px;
+      }
+      
+      .origem-destino h3 {
+        font-size: 1.1em;
+      }
+      
+      .origem-destino p {
+        font-size: 1.2em;
+      }
+    }
+    
+    /* Ajustes para telas muito pequenas */
+    @media (max-width: 360px) {
+      .menu-top button {
+        font-size: 0.8em;
+        padding: 7px 10px;
+      }
+      
+      .menu-top .material-icons {
+        font-size: 16px;
+      }
+      
+      .container {
+        padding: 15px;
+      }
+      
+      h1 {
+        font-size: 1.3em;
+      }
+      
+      input, select {
+        padding: 10px;
+        font-size: 0.95em;
+      }
+      
+      button.calc {
+        padding: 12px;
+      }
+      
+      .origem-destino {
+        padding: 12px;
+      }
+      
+      .origem-destino p {
+        font-size: 1em;
+      }
+      
+      .rota-seta {
+        margin: 0 5px;
+      }
+    }
+    
+    /* Garantir que não haja overflow horizontal */
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <!-- MENU LATERAL -->
-  <nav>
+  <!-- MENU SUPERIOR (mobile) / LATERAL (desktop) -->
+  <div class="menu-top">
     <button onclick="mostrarSeção('frete-container')">
       <span class="material-icons">local_shipping</span> Frete x Faturado
     </button>
@@ -222,7 +429,7 @@
     <button onclick="mostrarSeção('desconto-container')">
       <span class="material-icons">sell</span> Desconto
     </button>
-  </nav>
+  </div>
 
   <!-- CONTEÚDO PRINCIPAL -->
   <div class="main">
@@ -231,6 +438,18 @@
       <h1>Cálculo de Frete x Faturado</h1>
       <div id="frete-form-container" class="form-container">
         <form id="calculo-form">
+          <label for="origem">Origem:</label>
+          <div class="input-with-suggestions">
+            <input type="text" id="origem" placeholder="Digite a cidade de origem" required>
+            <div id="origem-suggestions" class="suggestions hidden"></div>
+          </div>
+
+          <label for="destino">Destino:</label>
+          <div class="input-with-suggestions">
+            <input type="text" id="destino" placeholder="Digite a cidade de destino" required>
+            <div id="destino-suggestions" class="suggestions hidden"></div>
+          </div>
+
           <label for="frete">Valor do Frete (R$):</label>
           <input type="text" id="frete" required>
 
@@ -294,6 +513,16 @@
   </div>
 
   <script>
+    // Base de dados de cidades brasileiras (exemplo simplificado)
+    const cidadesBrasileiras = [
+      "São Paulo/SP", "Rio de Janeiro/RJ", "Belo Horizonte/MG", "Porto Alegre/RS",
+      "Curitiba/PR", "Salvador/BA", "Fortaleza/CE", "Recife/PE", "Brasília/DF",
+      "Goiânia/GO", "Manaus/AM", "Belém/PA", "Campinas/SP", "Santos/SP", "São José dos Campos/SP",
+      "Ribeirão Preto/SP", "Sorocaba/SP", "Campo Grande/MS", "Cuiabá/MT", "Florianópolis/SC",
+      "Vitória/ES", "João Pessoa/PB", "Maceió/AL", "Natal/RN", "Teresina/PI", "São Luís/MA",
+      "Aracaju/SE", "Porto Velho/RO", "Rio Branco/AC", "Boa Vista/RR", "Palmas/TO", "Macapá/AP"
+    ].sort();
+
     // Função para formatar números com separador de milhares e casas decimais
     function formatarNumeroBrasileiro(numero, casasDecimais = 2) {
       if (isNaN(numero) || numero === null) return '0,00';
@@ -313,12 +542,64 @@
       return parseFloat(valor.replace(/\./g, '').replace(/,/g, '.')) || 0;
     }
 
-    document.getElementById('frete').addEventListener('input', function() {
-      this.value = formatarNumero(this.value);
-    });
-    
-    document.getElementById('valorTotal').addEventListener('input', function() {
-      this.value = formatarNumero(this.value);
+    // Configuração dos campos de origem e destino
+    function configurarAutoComplete(inputId, suggestionsId) {
+      const input = document.getElementById(inputId);
+      const suggestionsContainer = document.getElementById(suggestionsId);
+      
+      input.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        if (value.length < 2) {
+          suggestionsContainer.classList.add('hidden');
+          return;
+        }
+        
+        const filtered = cidadesBrasileiras.filter(cidade => 
+          cidade.toLowerCase().includes(value)
+        );
+        
+        if (filtered.length > 0) {
+          suggestionsContainer.innerHTML = filtered.map(cidade => 
+            `<div class="suggestion-item" data-value="${cidade}">${cidade}</div>`
+          ).join('');
+          suggestionsContainer.classList.remove('hidden');
+        } else {
+          suggestionsContainer.classList.add('hidden');
+        }
+      });
+      
+      // Fechar sugestões ao clicar fora
+      document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+          suggestionsContainer.classList.add('hidden');
+        }
+      });
+      
+      // Selecionar uma sugestão
+      suggestionsContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('suggestion-item')) {
+          input.value = e.target.getAttribute('data-value');
+          suggestionsContainer.classList.add('hidden');
+        }
+      });
+    }
+
+    // Inicializar os campos de autocomplete
+    document.addEventListener('DOMContentLoaded', function() {
+      configurarAutoComplete('origem', 'origem-suggestions');
+      configurarAutoComplete('destino', 'destino-suggestions');
+      
+      // Formatação dos campos monetários
+      document.getElementById('frete').addEventListener('input', function() {
+        this.value = formatarNumero(this.value);
+      });
+      
+      document.getElementById('valorTotal').addEventListener('input', function() {
+        this.value = formatarNumero(this.value);
+      });
+      
+      // Mostrar a primeira seção por padrão
+      mostrarSeção('frete-container');
     });
 
     // Recolher formulário
@@ -346,13 +627,15 @@
 
     // FRETE
     function calcularFrete() {
+      const origem = document.getElementById('origem').value.toUpperCase();
+      const destino = document.getElementById('destino').value.toUpperCase();
       const frete = removerFormatacao(document.getElementById('frete').value);
       const valorTotal = removerFormatacao(document.getElementById('valorTotal').value);
       const kms = parseFloat(document.getElementById('kms').value);
       const pesoKg = parseFloat(document.getElementById('peso').value);
 
-      if (valorTotal === 0 || isNaN(kms) || isNaN(pesoKg) || kms <= 0 || pesoKg <= 0) {
-        document.getElementById('resultado').innerHTML = '<p style="color:#e74c3c;">Preencha todos os campos corretamente!</p>';
+      if (!origem || !destino || valorTotal === 0 || isNaN(kms) || isNaN(pesoKg) || kms <= 0 || pesoKg <= 0) {
+        document.getElementById('resultado').innerHTML = '<p class="error-msg">Preencha todos os campos corretamente!</p>';
         return;
       }
 
@@ -365,6 +648,11 @@
       collapseForm('frete');
 
       document.getElementById('resultado').innerHTML = `
+        <div class="origem-destino">
+          <h3>Origem | Destino:</h3>
+          <p>${origem} <span class="rota-seta">→</span> ${destino}</p>
+        </div>
+        
         <div class="section-title">Dados Informados</div>
         <div class="cards">
           <div class="card">
@@ -410,7 +698,7 @@
       const dataAtual = new Date();
 
       if (isNaN(dataFabricacao) || isNaN(dataVencimento) || dataFabricacao >= dataVencimento) {
-        document.getElementById('resultado-vida-util').innerHTML = '<p style="color:#e74c3c;">Por favor, insira datas válidas!</p>';
+        document.getElementById('resultado-vida-util').innerHTML = '<p class="error-msg">Por favor, insira datas válidas!</p>';
         return;
       }
 
@@ -472,7 +760,7 @@
       const litragem = parseFloat(document.getElementById('litragem').value);
 
       if (isNaN(valorProdutos) || isNaN(valorNota) || isNaN(precoUnitario) || isNaN(litragem) || valorProdutos <= 0) {
-        document.getElementById('resultado-desconto').innerHTML = '<p style="color:#e74c3c;">Por favor, insira valores válidos!</p>';
+        document.getElementById('resultado-desconto').innerHTML = '<p class="error-msg">Por favor, insira valores válidos!</p>';
         return;
       }
 
@@ -529,6 +817,9 @@
         container.classList.add('hidden');
       });
       document.getElementById(id).classList.remove('hidden');
+      
+      // Scroll para o topo da seção
+      document.querySelector('.main').scrollTop = 0;
     }
   </script>
 </body>
