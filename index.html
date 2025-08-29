@@ -332,6 +332,59 @@
       font-weight: bold;
     }
     
+    /* Estilos para a área de colagem de imagem */
+    .image-paste-area {
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background-color: #f9f9f9;
+      grid-column: 1 / -1;
+    }
+    
+    .image-paste-area:hover {
+      border-color: var(--accent-color);
+      background-color: #f0f9f0;
+    }
+    
+    .image-paste-area p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9em;
+    }
+    
+    .pasted-image-container {
+      margin-top: 15px;
+      text-align: center;
+      grid-column: 1 / -1;
+    }
+    
+    .pasted-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
+    }
+    
+    .remove-image-btn {
+      margin-top: 10px;
+      padding: 5px 10px;
+      background: var(--error-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+    
+    .remove-image-btn:hover {
+      background: #c0392b;
+    }
+
     /* Layout para telas maiores */
     @media (min-width: 768px) {
       body {
@@ -659,6 +712,49 @@
     let kmsValor = 0;
     let fretePorKmValor = 0;
     let freteValor = 0;
+    let cotacaoImageData = null;
+
+    // Função para colar imagem do clipboard
+    function handleImagePaste(e) {
+      // Verificar se há itens de imagem no clipboard
+      const items = e.clipboardData.items;
+      
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          const reader = new FileReader();
+          
+          reader.onload = function(event) {
+            cotacaoImageData = event.target.result;
+            updateCotacaoImage();
+          };
+          
+          reader.readAsDataURL(blob);
+          e.preventDefault();
+          break;
+        }
+      }
+    }
+    
+    // Atualizar a exibição da imagem na cotação
+    function updateCotacaoImage() {
+      const imageContainer = document.getElementById('cotacao-image-container');
+      
+      if (cotacaoImageData) {
+        imageContainer.innerHTML = `
+          <img src="${cotacaoImageData}" alt="Imagem da cotação" class="pasted-image">
+          <button class="remove-image-btn" onclick="removeCotacaoImage()">Remover Imagem</button>
+        `;
+      } else {
+        imageContainer.innerHTML = '';
+      }
+    }
+    
+    // Remover a imagem da cotação
+    function removeCotacaoImage() {
+      cotacaoImageData = null;
+      updateCotacaoImage();
+    }
 
     // FRETE
     function calcularFrete() {
@@ -759,7 +855,24 @@
             <p>R$ ${formatarNumeroBrasileiro(freteValor)}</p>
           </div>
         </div>
+        
+        <div class="image-paste-area" id="image-paste-area">
+          <p>Clique aqui e cole (Ctrl+V) uma imagem da cotação</p>
+        </div>
+        
+        <div class="pasted-image-container" id="cotacao-image-container"></div>
       `;
+      
+      // Adicionar evento de colagem à área de colagem
+      const pasteArea = document.getElementById('image-paste-area');
+      pasteArea.addEventListener('click', function() {
+        this.focus();
+      });
+      
+      pasteArea.addEventListener('paste', handleImagePaste);
+      
+      // Atualizar a imagem se já existir uma
+      updateCotacaoImage();
     }
 
     // VIDA ÚTIL
