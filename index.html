@@ -150,6 +150,29 @@
       cursor: pointer;
       margin-bottom: 10px;
     }
+    
+    /* Novo botão de cotação */
+    button.cotacao {
+      width: 100%;
+      padding: 12px;
+      background: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin: 15px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    button.cotacao:hover {
+      background: #1a252f;
+    }
 
     /* ===== CARDS RESULTADO ===== */
     .cards {
@@ -397,6 +420,11 @@
         padding: 12px;
       }
       
+      button.cotacao {
+        padding: 10px;
+        font-size: 0.9em;
+      }
+      
       .origem-destino {
         padding: 12px;
       }
@@ -625,24 +653,33 @@
       }
     }
 
+    // Variáveis globais para armazenar os resultados do frete
+    let origemValor = '';
+    let destinoValor = '';
+    let kmsValor = 0;
+    let fretePorKmValor = 0;
+    let freteValor = 0;
+
     // FRETE
     function calcularFrete() {
-      const origem = document.getElementById('origem').value.toUpperCase();
-      const destino = document.getElementById('destino').value.toUpperCase();
+      origemValor = document.getElementById('origem').value.toUpperCase();
+      destinoValor = document.getElementById('destino').value.toUpperCase();
       const frete = removerFormatacao(document.getElementById('frete').value);
       const valorTotal = removerFormatacao(document.getElementById('valorTotal').value);
       const kms = parseFloat(document.getElementById('kms').value);
       const pesoKg = parseFloat(document.getElementById('peso').value);
 
-      if (!origem || !destino || valorTotal === 0 || isNaN(kms) || isNaN(pesoKg) || kms <= 0 || pesoKg <= 0) {
+      if (!origemValor || !destinoValor || valorTotal === 0 || isNaN(kms) || isNaN(pesoKg) || kms <= 0 || pesoKg <= 0) {
         document.getElementById('resultado').innerHTML = '<p class="error-msg">Preencha todos os campos corretamente!</p>';
         return;
       }
 
       const pesoTon = pesoKg / 1000;
       const percentual = (frete / valorTotal) * 100;
-      const fretePorKm = frete / kms;
+      fretePorKmValor = frete / kms;
       const fretePorTonelada = frete / pesoTon;
+      freteValor = frete;
+      kmsValor = kms;
 
       // Recolher o formulário após o cálculo
       collapseForm('frete');
@@ -650,8 +687,12 @@
       document.getElementById('resultado').innerHTML = `
         <div class="origem-destino">
           <h3>Origem | Destino:</h3>
-          <p>${origem} <span class="rota-seta">→</span> ${destino}</p>
+          <p>${origemValor} <span class="rota-seta">→</span> ${destinoValor}</p>
         </div>
+        
+        <button class="cotacao" onclick="exibirCotacao()">
+          <span class="material-icons">request_quote</span> Exibir Cotação
+        </button>
         
         <div class="section-title">Dados Informados</div>
         <div class="cards">
@@ -681,11 +722,41 @@
           </div>
           <div class="card">
             <h3>Frete por KM</h3>
-            <p>R$ ${formatarNumeroBrasileiro(fretePorKm)}</p>
+            <p>R$ ${formatarNumeroBrasileiro(fretePorKmValor)}</p>
           </div>
           <div class="card">
             <h3>Frete por Tonelada</h3>
             <p>R$ ${formatarNumeroBrasileiro(fretePorTonelada)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // EXIBIR COTAÇÃO
+    function exibirCotacao() {
+      document.getElementById('resultado').innerHTML = `
+        <div class="origem-destino">
+          <h3>Origem | Destino:</h3>
+          <p>${origemValor} <span class="rota-seta">→</span> ${destinoValor}</p>
+        </div>
+        
+        <button class="cotacao" onclick="calcularFrete()">
+          <span class="material-icons">arrow_back</span> Voltar para Resultado Completo
+        </button>
+        
+        <div class="section-title">Resumo da Cotação</div>
+        <div class="cards">
+          <div class="card">
+            <h3>KM Rodados</h3>
+            <p>${formatarNumeroBrasileiro(kmsValor, 0)} km</p>
+          </div>
+          <div class="card">
+            <h3>Frete por KM</h3>
+            <p>R$ ${formatarNumeroBrasileiro(fretePorKmValor)}</p>
+          </div>
+          <div class="card">
+            <h3>Valor do Frete</h3>
+            <p>R$ ${formatarNumeroBrasileiro(freteValor)}</p>
           </div>
         </div>
       `;
