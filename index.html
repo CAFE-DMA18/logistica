@@ -384,6 +384,25 @@
     .remove-image-btn:hover {
       background: #c0392b;
     }
+    
+    /* Estilo para o número da ordem de frete na cotação */
+    .ordem-frete-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .ordem-frete-numero {
+      background-color: var(--secondary-color);
+      color: var(--dark-color);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
 
     /* Layout para telas maiores */
     @media (min-width: 768px) {
@@ -443,6 +462,10 @@
       .origem-destino p {
         font-size: 1.2em;
       }
+      
+      .ordem-frete-header {
+        flex-wrap: nowrap;
+      }
     }
     
     /* Ajustes para telas muito pequenas */
@@ -489,6 +512,15 @@
       .rota-seta {
         margin: 0 5px;
       }
+      
+      .ordem-frete-header {
+        flex-direction: column;
+        gap: 5px;
+      }
+      
+      .ordem-frete-numero {
+        font-size: 0.8em;
+      }
     }
     
     /* Garantir que não haja overflow horizontal */
@@ -519,6 +551,9 @@
       <h1>Cálculo de Frete x Faturado</h1>
       <div id="frete-form-container" class="form-container">
         <form id="calculo-form">
+          <label for="ordemFrete">Nº da Ordem de Frete:</label>
+          <input type="text" id="ordemFrete" placeholder="Digite o número da ordem de frete">
+
           <label for="origem">Origem:</label>
           <div class="input-with-suggestions">
             <input type="text" id="origem" placeholder="Digite a cidade de origem" required>
@@ -713,6 +748,7 @@
     let fretePorKmValor = 0;
     let freteValor = 0;
     let cotacaoImageData = null;
+    let ordemFreteValor = '';
 
     // Função para colar imagem do clipboard
     function handleImagePaste(e) {
@@ -758,6 +794,7 @@
 
     // FRETE
     function calcularFrete() {
+      ordemFreteValor = document.getElementById('ordemFrete').value;
       origemValor = document.getElementById('origem').value.toUpperCase();
       destinoValor = document.getElementById('destino').value.toUpperCase();
       const frete = removerFormatacao(document.getElementById('frete').value);
@@ -840,7 +877,11 @@
           <span class="material-icons">arrow_back</span> Voltar para Resultado Completo
         </button>
         
-        <div class="section-title">Resumo da Cotação</div>
+        <div class="ordem-frete-header">
+          <div class="section-title">Resumo da Cotação</div>
+          ${ordemFreteValor ? `<div class="ordem-frete-numero">Ordem de Frete Nº: ${ordemFreteValor}</div>` : ''}
+        </div>
+        
         <div class="cards">
           <div class="card">
             <h3>KM Rodados</h3>
