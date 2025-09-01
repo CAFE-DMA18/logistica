@@ -6,6 +6,11 @@
   <title>Cálculos Diversos</title>
   <!-- Google Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- SheetJS para exportação XLSX -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF para exportação PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -105,6 +110,11 @@
       color: var(--dark-color);
     }
 
+    label.obrigatorio::after {
+      content: " *";
+      color: var(--error-color);
+    }
+
     input, select {
       width: 100%;
       padding: 12px;
@@ -119,6 +129,11 @@
     input:focus, select:focus {
       outline: 2px solid var(--accent-color);
       background: #fff;
+    }
+
+    input.campo-obrigatorio:invalid {
+      border-color: var(--error-color);
+      background-color: #ffebee;
     }
 
     button.calc {
@@ -172,6 +187,54 @@
     
     button.cotacao:hover {
       background: #1a252f;
+    }
+
+    /* Botões de ação */
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .action-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.3s;
+    }
+    
+    .save-btn {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .save-btn:hover {
+      background-color: #215c24;
+    }
+    
+    .export-btn {
+      background-color: #1565c0;
+      color: white;
+    }
+    
+    .export-btn:hover {
+      background-color: #0d47a1;
+    }
+    
+    .report-btn {
+      background-color: #7b1fa2;
+      color: white;
+    }
+    
+    .report-btn:hover {
+      background-color: #4a148c;
     }
 
     /* ===== CARDS RESULTADO ===== */
@@ -297,6 +360,14 @@
     /* Mensagem de erro */
     .error-msg {
       color: var(--error-color);
+      text-align: center;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    
+    /* Mensagem de sucesso */
+    .success-msg {
+      color: var(--success-color);
       text-align: center;
       margin: 10px 0;
       font-weight: bold;
@@ -466,6 +537,10 @@
       .ordem-frete-header {
         flex-wrap: nowrap;
       }
+      
+      .action-buttons {
+        flex-direction: row;
+      }
     }
     
     /* Ajustes para telas muito pequenas */
@@ -521,6 +596,10 @@
       .ordem-frete-numero {
         font-size: 0.8em;
       }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
     }
     
     /* Garantir que não haja overflow horizontal */
@@ -542,6 +621,9 @@
     <button onclick="mostrarSeção('desconto-container')">
       <span class="material-icons">sell</span> Desconto
     </button>
+    <button onclick="mostrarSeção('relatorio-container')">
+      <span class="material-icons">analytics</span> Relatórios
+    </button>
   </div>
 
   <!-- CONTEÚDO PRINCIPAL -->
@@ -554,29 +636,35 @@
           <label for="ordemFrete">Nº da Ordem de Frete:</label>
           <input type="text" id="ordemFrete" placeholder="Digite o número da ordem de frete">
 
-          <label for="origem">Origem:</label>
+          <label for="prestador">Prestador:</label>
+          <input type="text" id="prestador" placeholder="Digite o nome do prestador">
+
+          <label for="nfs">NFs:</label>
+          <input type="text" id="nfs" placeholder="Digite os números das NFs">
+
+          <label for="origem" class="obrigatorio">Origem (Cidade/UF):</label>
           <div class="input-with-suggestions">
-            <input type="text" id="origem" placeholder="Digite a cidade de origem" required>
+            <input type="text" id="origem" placeholder="Digite a cidade de origem" class="campo-obrigatorio" required>
             <div id="origem-suggestions" class="suggestions hidden"></div>
           </div>
 
-          <label for="destino">Destino:</label>
+          <label for="destino" class="obrigatorio">Destino (Cidade/UF):</label>
           <div class="input-with-suggestions">
-            <input type="text" id="destino" placeholder="Digite a cidade de destino" required>
+            <input type="text" id="destino" placeholder="Digite a cidade de destino" class="campo-obrigatorio" required>
             <div id="destino-suggestions" class="suggestions hidden"></div>
           </div>
 
-          <label for="frete">Valor do Frete (R$):</label>
-          <input type="text" id="frete" required>
+          <label for="frete" class="obrigatorio">Valor do Frete (R$):</label>
+          <input type="text" id="frete" class="campo-obrigatorio" required>
 
-          <label for="valorTotal">Valor Total da NF (R$):</label>
-          <input type="text" id="valorTotal" required>
+          <label for="valorTotal" class="obrigatorio">Valor Total da NF (R$):</label>
+          <input type="text" id="valorTotal" class="campo-obrigatorio" required>
 
-          <label for="kms">KM Rodados:</label>
-          <input type="number" id="kms" required>
+          <label for="kms" class="obrigatorio">KM Rodados:</label>
+          <input type="number" id="kms" class="campo-obrigatorio" required>
 
-          <label for="peso">Peso da Carga (kg):</label>
-          <input type="number" id="peso" step="0.01" required>
+          <label for="peso" class="obrigatorio">Peso da Carga (kg):</label>
+          <input type="number" id="peso" step="0.01" class="campo-obrigatorio" required>
 
           <button type="button" class="calc" onclick="calcularFrete()">Calcular</button>
         </form>
@@ -591,10 +679,10 @@
       <div id="vida-util-form-container" class="form-container">
         <form id="vida-util-form">
           <label for="dataFabricacao">Data de Fabricação:</label>
-          <input type="date" id="dataFabricacao" required>
+          <input type="date" id="dataFabricacao">
 
           <label for="dataVencimento">Data de Vencimento:</label>
-          <input type="date" id="dataVencimento" required>
+          <input type="date" id="dataVencimento">
 
           <button type="button" class="calc" onclick="calcularVidaUtil()">Calcular</button>
         </form>
@@ -609,16 +697,16 @@
       <div id="desconto-form-container" class="form-container">
         <form id="desconto-form">
           <label for="valorProdutos">Valor Total dos Produtos (R$):</label>
-          <input type="number" id="valorProdutos" placeholder="Digite o valor total dos produtos" required>
+          <input type="number" id="valorProdutos" placeholder="Digite o valor total dos produtos">
 
           <label for="valorNota">Valor Total da Nota Fiscal (R$):</label>
-          <input type="number" id="valorNota" placeholder="Digite o valor total da nota fiscal" required>
+          <input type="number" id="valorNota" placeholder="Digite o valor total da nota fiscal">
 
           <label for="precoUnitario">Preço Unitário (R$):</label>
-          <input type="number" id="precoUnitario" placeholder="Digite o preço unitário" required>
+          <input type="number" id="precoUnitario" placeholder="Digite o preço unitário">
 
           <label for="litragem">Por quantos litros:</label>
-          <input type="number" id="litragem" placeholder="Digite a litragem" required>
+          <input type="number" id="litragem" placeholder="Digite a litragem">
 
           <button type="button" class="calc" onclick="calcularDesconto()">Calcular</button>
         </form>
@@ -626,9 +714,32 @@
       <button id="toggle-desconto-form" class="toggle-form hidden" onclick="toggleForm('desconto')">Mostrar Campos</button>
       <div id="resultado-desconto"></div>
     </div>
+
+    <!-- RELATÓRIOS -->
+    <div id="relatorio-container" class="container hidden">
+      <h1>Relatórios e Exportação</h1>
+      
+      <div class="section-title">Cotações de Frete Salvas</div>
+      
+      <div id="lista-cotacoes">
+        <p>Carregando cotações salvas...</p>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="action-btn export-btn" onclick="exportarParaXLSX()">
+          <span class="material-icons">description</span> Exportar para XLSX
+        </button>
+        <button class="action-btn report-btn" onclick="gerarRelatorioCompleto()">
+          <span class="material-icons">summarize</span> Relatório Completo
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
+    // Inicializar jsPDF
+    window.jsPDF = window.jspdf.jsPDF;
+
     // Base de dados de cidades brasileiras (exemplo simplificado)
     const cidadesBrasileiras = [
       "São Paulo/SP", "Rio de Janeiro/RJ", "Belo Horizonte/MG", "Porto Alegre/RS",
@@ -713,10 +824,38 @@
       document.getElementById('valorTotal').addEventListener('input', function() {
         this.value = formatarNumero(this.value);
       });
+
+      // Validação dos campos obrigatórios (apenas para o formulário de frete)
+      document.querySelectorAll('#frete-container .campo-obrigatorio').forEach(input => {
+        input.addEventListener('blur', function() {
+          if (this.value.trim() === '') {
+            this.classList.add('campo-obrigatorio:invalid');
+          } else {
+            this.classList.remove('campo-obrigatorio:invalid');
+          }
+        });
+      });
       
       // Mostrar a primeira seção por padrão
       mostrarSeção('frete-container');
+      
+      // Carregar cotações salvas
+      carregarCotacoesSalvas();
     });
+
+    // Função para validar apenas os campos obrigatórios do frete
+    function validarCamposObrigatoriosFrete() {
+      let isValid = true;
+      document.querySelectorAll('#frete-container .campo-obrigatorio').forEach(input => {
+        if (input.value.trim() === '') {
+          input.classList.add('campo-obrigatorio:invalid');
+          isValid = false;
+        } else {
+          input.classList.remove('campo-obrigatorio:invalid');
+        }
+      });
+      return isValid;
+    }
 
     // Recolher formulário
     function collapseForm(formType) {
@@ -749,6 +888,176 @@
     let freteValor = 0;
     let cotacaoImageData = null;
     let ordemFreteValor = '';
+    let prestadorValor = '';
+    let nfsValor = '';
+    let valorTotalNota = 0;
+    let pesoCarga = 0;
+    let percentualFrete = 0;
+    let fretePorTonelada = 0;
+
+    // Função para salvar cotação no GitHub (simulado com localStorage)
+    function salvarCotacaoNoGitHub() {
+      if (!origemValor || !destinoValor) {
+        alert('Calcule primeiro o frete antes de salvar.');
+        return;
+      }
+      
+      const cotacao = {
+        id: Date.now(),
+        data: new Date().toLocaleString('pt-BR'),
+        ordemFrete: ordemFreteValor,
+        prestador: prestadorValor,
+        nfs: nfsValor,
+        origem: origemValor,
+        destino: destinoValor,
+        kms: kmsValor,
+        frete: freteValor,
+        fretePorKm: fretePorKmValor,
+        valorTotalNota: valorTotalNota,
+        pesoCarga: pesoCarga,
+        percentualFrete: percentualFrete,
+        fretePorTonelada: fretePorTonelada,
+        imagem: cotacaoImageData
+      };
+      
+      // Simular salvamento no GitHub (usando localStorage como exemplo)
+      let cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
+      cotacoesSalvas.push(cotacao);
+      localStorage.setItem('cotacoesFrete', JSON.stringify(cotacoesSalvas));
+      
+      // Feedback para o usuário
+      alert('Cotação salva com sucesso!');
+      
+      // Atualizar a lista de cotações
+      carregarCotacoesSalvas();
+    }
+
+    // Função para carregar cotações salvas
+    function carregarCotacoesSalvas() {
+      const cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
+      const listaCotacoes = document.getElementById('lista-cotacoes');
+      
+      if (cotacoesSalvas.length === 0) {
+        listaCotacoes.innerHTML = '<p>Nenhuma cotação salva ainda.</p>';
+        return;
+      }
+      
+      let html = '<div class="cards">';
+      cotacoesSalvas.forEach(cotacao => {
+        html += `
+          <div class="card">
+            <h3>${cotacao.origem} → ${cotacao.destino}</h3>
+            <p>${cotacao.data}</p>
+            <p>KM: ${formatarNumeroBrasileiro(cotacao.kms, 0)}</p>
+            <p>Frete: R$ ${formatarNumeroBrasileiro(cotacao.frete)}</p>
+            <p>${cotacao.ordemFrete ? 'Ordem: ' + cotacao.ordemFrete : ''}</p>
+            <p>${cotacao.prestador ? 'Prestador: ' + cotacao.prestador : ''}</p>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      listaCotacoes.innerHTML = html;
+    }
+
+    // Função para exportar para XLSX
+    function exportarParaXLSX() {
+      const cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
+      
+      if (cotacoesSalvas.length === 0) {
+        alert('Não há cotações salvas para exportar.');
+        return;
+      }
+      
+      // Preparar dados para a planilha
+      const dados = cotacoesSalvas.map(cotacao => ({
+        'Data': cotacao.data,
+        'Ordem de Frete': cotacao.ordemFrete || '',
+        'Prestador': cotacao.prestador || '',
+        'NFs': cotacao.nfs || '',
+        'Origem': cotacao.origem,
+        'Destino': cotacao.destino,
+        'KM Rodados': cotacao.kms,
+        'Valor do Frete (R$)': cotacao.frete,
+        'Frete por KM (R$)': cotacao.fretePorKm,
+        'Valor Total NF (R$)': cotacao.valorTotalNota,
+        'Peso da Carga (kg)': cotacao.pesoCarga,
+        'Percentual Frete (%)': cotacao.percentualFrete,
+        'Frete por Tonelada (R$)': cotacao.fretePorTonelada
+      }));
+      
+      // Criar planilha
+      const worksheet = XLSX.utils.json_to_sheet(dados);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Cotações de Frete');
+      
+      // Gerar arquivo e fazer download
+      XLSX.writeFile(workbook, 'cotacoes_frete.xlsx');
+    }
+
+    // Função para gerar relatório completo
+    function gerarRelatorioCompleto() {
+      const cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
+      
+      if (cotacoesSalvas.length === 0) {
+        alert('Não há cotações salvas para gerar relatório.');
+        return;
+      }
+      
+      // Criar um workbook com múltiplas abas
+      const workbook = XLSX.utils.book_new();
+      
+      // Aba de resumo
+      const resumoData = cotacoesSalvas.map(cotacao => ({
+        'Data': cotacao.data,
+        'Ordem de Frete': cotacao.ordemFrete || '',
+        'Prestador': cotacao.prestador || '',
+        'NFs': cotacao.nfs || '',
+        'Origem': cotacao.origem,
+        'Destino': cotacao.destino,
+        'KM': cotacao.kms,
+        'Frete (R$)': cotacao.frete,
+        'Frete/KM (R$)': cotacao.fretePorKm
+      }));
+      
+      const resumoSheet = XLSX.utils.json_to_sheet(resumoData);
+      XLSX.utils.book_append_sheet(workbook, resumoSheet, 'Resumo');
+      
+      // Aba de detalhes
+      const detalhesData = cotacoesSalvas.map(cotacao => ({
+        'Data': cotacao.data,
+        'Ordem de Frete': cotacao.ordemFrete || '',
+        'Prestador': cotacao.prestador || '',
+        'NFs': cotacao.nfs || '',
+        'Origem': cotacao.origem,
+        'Destino': cotacao.destino,
+        'KM Rodados': cotacao.kms,
+        'Valor do Frete (R$)': cotacao.frete,
+        'Frete por KM (R$)': cotacao.fretePorKm,
+        'Valor Total NF (R$)': cotacao.valorTotalNota,
+        'Peso da Carga (kg)': cotacao.pesoCarga,
+        'Percentual Frete (%)': cotacao.percentualFrete,
+        'Frete por Tonelada (R$)': cotacao.fretePorTonelada
+      }));
+      
+      const detalhesSheet = XLSX.utils.json_to_sheet(detalhesData);
+      XLSX.utils.book_append_sheet(workbook, detalhesSheet, 'Detalhes');
+      
+      // Calcular totais e médias
+      const totais = {
+        'Total KM': cotacoesSalvas.reduce((sum, c) => sum + c.kms, 0),
+        'Total Frete (R$)': cotacoesSalvas.reduce((sum, c) => sum + c.frete, 0),
+        'Média Frete/KM (R$)': cotacoesSalvas.reduce((sum, c) => sum + c.fretePorKm, 0) / cotacoesSalvas.length,
+        'Média Percentual (%)': cotacoesSalvas.reduce((sum, c) => sum + c.percentualFrete, 0) / cotacoesSalvas.length
+      };
+      
+      const totaisData = [totais];
+      const totaisSheet = XLSX.utils.json_to_sheet(totaisData);
+      XLSX.utils.book_append_sheet(workbook, totaisSheet, 'Totais');
+      
+      // Gerar arquivo e fazer download
+      XLSX.writeFile(workbook, 'relatorio_completo_fretes.xlsx');
+    }
 
     // Função para colar imagem do clipboard
     function handleImagePaste(e) {
@@ -763,6 +1072,9 @@
           reader.onload = function(event) {
             cotacaoImageData = event.target.result;
             updateCotacaoImage();
+            
+            // Esconder a área de colagem após a colagem
+            document.getElementById('image-paste-area').classList.add('hidden');
           };
           
           reader.readAsDataURL(blob);
@@ -790,27 +1102,137 @@
     function removeCotacaoImage() {
       cotacaoImageData = null;
       updateCotacaoImage();
+      
+      // Mostrar novamente a área de colagem
+      document.getElementById('image-paste-area').classList.remove('hidden');
+    }
+
+    // Função para exportar cotação para PDF
+    function exportarCotacaoPDF() {
+      // Criar um clone do conteúdo da cotação para o PDF
+      const cotacaoContent = document.createElement('div');
+      cotacaoContent.id = 'pdf-content';
+      cotacaoContent.style.padding = '20px';
+      cotacaoContent.style.backgroundColor = 'white';
+      cotacaoContent.style.color = '#333';
+      cotacaoContent.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+      
+      // Adicionar cabeçalho
+      cotacaoContent.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #145a32; font-size: 24px; margin-bottom: 5px;">Cotação de Frete</h1>
+          <p style="color: #666; font-size: 14px;">${new Date().toLocaleDateString('pt-BR')}</p>
+        </div>
+        
+        <div style="background: #f8f9f6; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; border: 1px solid #ddd;">
+          <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #145a32;">Origem | Destino:</h3>
+          <p style="font-size: 18px; font-weight: bold; margin: 0; text-transform: uppercase;">${origemValor} → ${destinoValor}</p>
+        </div>
+        
+        ${ordemFreteValor ? `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="background-color: #f1c40f; color: #333; display: inline-block; padding: 5px 12px; border-radius: 20px; font-weight: bold;">
+            Ordem de Frete Nº: ${ordemFreteValor}
+          </div>
+        </div>
+        ` : ''}
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
+            <h3 style="margin: 0; font-size: 14px; color: #145a32;">Prestador</h3>
+            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">${prestadorValor || 'Não informado'}</p>
+          </div>
+          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
+            <h3 style="margin: 0; font-size: 14px; color: #145a32;">NFs</h3>
+            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">${nfsValor || 'Não informado'}</p>
+          </div>
+          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
+            <h3 style="margin: 0; font-size: 14px; color: #145a32;">KM Rodados</h3>
+            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">${formatarNumeroBrasileiro(kmsValor, 0)} km</p>
+          </div>
+          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
+            <h3 style="margin: 0; font-size: 14px; color: #145a32;">Frete por KM</h3>
+            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">R$ ${formatarNumeroBrasileiro(fretePorKmValor)}</p>
+          </div>
+          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
+            <h3 style="margin: 0; font-size: 14px; color: #145a32;">Valor do Frete</h3>
+            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">R$ ${formatarNumeroBrasileiro(freteValor)}</p>
+          </div>
+        </div>
+      `;
+      
+      // Adicionar imagem se existir
+      if (cotacaoImageData) {
+        cotacaoContent.innerHTML += `
+          <div style="text-align: center; margin-top: 20px;">
+            <img src="${cotacaoImageData}" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 1px solid #ddd;" alt="Imagem da cotação">
+          </div>
+        `;
+      }
+      
+      // Adicionar ao documento temporariamente
+      document.body.appendChild(cotacaoContent);
+      
+      // Gerar PDF
+      html2canvas(cotacaoContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 295; // A4 height in mm
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+        
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        
+        // Adicionar páginas adicionais se necessário
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+        
+        // Salvar o PDF
+        pdf.save(`Cotação ${origemValor} → ${destinoValor} - Ordem de frete Nº ${ordemFreteValor}.pdf`);
+        
+        // Remover o conteúdo temporário
+        document.body.removeChild(cotacaoContent);
+      });
     }
 
     // FRETE
     function calcularFrete() {
+      // Validar apenas os campos obrigatórios do frete
+      if (!validarCamposObrigatoriosFrete()) {
+        document.getElementById('resultado').innerHTML = '<p class="error-msg">Por favor, preencha todos os campos obrigatórios!</p>';
+        return;
+      }
+
       ordemFreteValor = document.getElementById('ordemFrete').value;
+      prestadorValor = document.getElementById('prestador').value.toUpperCase();
+      nfsValor = document.getElementById('nfs').value;
       origemValor = document.getElementById('origem').value.toUpperCase();
       destinoValor = document.getElementById('destino').value.toUpperCase();
       const frete = removerFormatacao(document.getElementById('frete').value);
-      const valorTotal = removerFormatacao(document.getElementById('valorTotal').value);
+      valorTotalNota = removerFormatacao(document.getElementById('valorTotal').value);
       const kms = parseFloat(document.getElementById('kms').value);
-      const pesoKg = parseFloat(document.getElementById('peso').value);
+      pesoCarga = parseFloat(document.getElementById('peso').value);
 
-      if (!origemValor || !destinoValor || valorTotal === 0 || isNaN(kms) || isNaN(pesoKg) || kms <= 0 || pesoKg <= 0) {
+      if (valorTotalNota === 0 || isNaN(kms) || isNaN(pesoCarga) || kms <= 0 || pesoCarga <= 0) {
         document.getElementById('resultado').innerHTML = '<p class="error-msg">Preencha todos os campos corretamente!</p>';
         return;
       }
 
-      const pesoTon = pesoKg / 1000;
-      const percentual = (frete / valorTotal) * 100;
+      const pesoTon = pesoCarga / 1000;
+      percentualFrete = (frete / valorTotalNota) * 100;
       fretePorKmValor = frete / kms;
-      const fretePorTonelada = frete / pesoTon;
+      fretePorTonelada = frete / pesoTon;
       freteValor = frete;
       kmsValor = kms;
 
@@ -823,19 +1245,24 @@
           <p>${origemValor} <span class="rota-seta">→</span> ${destinoValor}</p>
         </div>
         
-        <button class="cotacao" onclick="exibirCotacao()">
-          <span class="material-icons">request_quote</span> Exibir Cotação
-        </button>
+        <div class="action-buttons">
+          <button class="action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+            <span class="material-icons">save</span> Salvar Cotação
+          </button>
+          <button class="cotacao" onclick="exibirCotacao()">
+            <span class="material-icons">request_quote</span> Exibir Cotação
+          </button>
+        </div>
         
         <div class="section-title">Dados Informados</div>
         <div class="cards">
           <div class="card">
             <h3>Valor da Nota</h3>
-            <p>R$ ${formatarNumeroBrasileiro(valorTotal)}</p>
+            <p>R$ ${formatarNumeroBrasileiro(valorTotalNota)}</p>
           </div>
           <div class="card">
             <h3>Peso da Carga</h3>
-            <p>${formatarNumeroBrasileiro(pesoKg, 2)} kg</p>
+            <p>${formatarNumeroBrasileiro(pesoCarga, 2)} kg</p>
           </div>
           <div class="card">
             <h3>KM Rodados</h3>
@@ -851,7 +1278,7 @@
           </div>
           <div class="card">
             <h3>Percentual</h3>
-            <p>${formatarNumeroBrasileiro(percentual, 2)}%</p>
+            <p>${formatarNumeroBrasileiro(percentualFrete, 2)}%</p>
           </div>
           <div class="card">
             <h3>Frete por KM</h3>
@@ -873,9 +1300,20 @@
           <p>${origemValor} <span class="rota-seta">→</span> ${destinoValor}</p>
         </div>
         
-        <button class="cotacao" onclick="calcularFrete()">
-          <span class="material-icons">arrow_back</span> Voltar para Resultado Completo
-        </button>
+        <div class="action-buttons">
+          <button class="action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+            <span class="material-icons">save</span> Salvar Cotação
+          </button>
+          <button class="action-btn export-btn" onclick="exportarCotacaoIndividual()">
+            <span class="material-icons">description</span> Exportar XLSX
+          </button>
+          <button class="action-btn report-btn" onclick="exportarCotacaoPDF()">
+            <span class="material-icons">picture_as_pdf</span> Exportar PDF
+          </button>
+          <button class="cotacao" onclick="calcularFrete()">
+            <span class="material-icons">arrow_back</span> Voltar
+          </button>
+        </div>
         
         <div class="ordem-frete-header">
           <div class="section-title">Resumo da Cotação</div>
@@ -883,6 +1321,14 @@
         </div>
         
         <div class="cards">
+          <div class="card">
+            <h3>Prestador</h3>
+            <p>${prestadorValor || 'Não informado'}</p>
+          </div>
+          <div class="card">
+            <h3>NFs</h3>
+            <p>${nfsValor || 'Não informado'}</p>
+          </div>
           <div class="card">
             <h3>KM Rodados</h3>
             <p>${formatarNumeroBrasileiro(kmsValor, 0)} km</p>
@@ -914,6 +1360,31 @@
       
       // Atualizar a imagem se já existir uma
       updateCotacaoImage();
+    }
+
+    // Exportar cotação individual
+    function exportarCotacaoIndividual() {
+      const cotacao = {
+        'Data': new Date().toLocaleString('pt-BR'),
+        'Ordem de Frete': ordemFreteValor || '',
+        'Prestador': prestadorValor || '',
+        'NFs': nfsValor || '',
+        'Origem': origemValor,
+        'Destino': destinoValor,
+        'KM Rodados': kmsValor,
+        'Valor do Frete (R$)': freteValor,
+        'Frete por KM (R$)': fretePorKmValor,
+        'Valor Total NF (R$)': valorTotalNota,
+        'Peso da Carga (kg)': pesoCarga,
+        'Percentual Frete (%)': percentualFrete,
+        'Frete por Tonelada (R$)': fretePorTonelada
+      };
+      
+      const worksheet = XLSX.utils.json_to_sheet([cotacao]);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Cotação');
+      
+      XLSX.writeFile(workbook, `cotacao_${origemValor}_${destinoValor}.xlsx`);
     }
 
     // VIDA ÚTIL
@@ -1045,6 +1516,11 @@
       
       // Scroll para o topo da seção
       document.querySelector('.main').scrollTop = 0;
+      
+      // Se for a seção de relatórios, carregar as cotações
+      if (id === 'relatorio-container') {
+        carregarCotacoesSalvas();
+      }
     }
   </script>
 </body>
