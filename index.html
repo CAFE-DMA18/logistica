@@ -475,6 +475,77 @@
       font-size: 0.9em;
     }
 
+    /* Botões de ação nas cotações salvas */
+    .cotacao-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    
+    .cotacao-action-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.8em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    
+    .edit-btn {
+      background-color: var(--accent-color);
+      color: white;
+    }
+    
+    .delete-btn {
+      background-color: var(--error-color);
+      color: white;
+    }
+
+    /* Botões no topo do container */
+    .top-action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .top-action-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.3s;
+    }
+
+    /* Botões na exibição de cotação */
+    .cotacao-top-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .cotacao-top-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.3s;
+    }
+
     /* Layout para telas maiores */
     @media (min-width: 768px) {
       body {
@@ -600,6 +671,18 @@
       .action-buttons {
         flex-direction: column;
       }
+      
+      .cotacao-actions {
+        flex-direction: column;
+      }
+      
+      .top-action-buttons {
+        flex-direction: column;
+      }
+      
+      .cotacao-top-buttons {
+        flex-direction: column;
+      }
     }
     
     /* Garantir que não haja overflow horizontal */
@@ -631,6 +714,20 @@
     <!-- FRETE -->
     <div id="frete-container" class="container">
       <h1>Cálculo de Frete x Faturado</h1>
+      
+      <!-- Botões de ação no topo -->
+      <div id="top-buttons" class="top-action-buttons">
+        <button class="top-action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+          <span class="material-icons">save</span> Salvar
+        </button>
+        <button class="top-action-btn report-btn" onclick="exportarResultadoGeralPDF()">
+          <span class="material-icons">picture_as_pdf</span> Exportar PDF
+        </button>
+        <button class="top-action-btn export-btn" onclick="exibirCotacao()">
+          <span class="material-icons">request_quote</span> Exibir Cotação
+        </button>
+      </div>
+      
       <div id="frete-form-container" class="form-container">
         <form id="calculo-form">
           <label for="ordemFrete">Nº da Ordem de Frete:</label>
@@ -642,13 +739,13 @@
           <label for="nfs">NFs:</label>
           <input type="text" id="nfs" placeholder="Digite os números das NFs">
 
-          <label for="origem" class="obrigatorio">Origem (Cidade/UF):</label>
+          <label for="origem" class="obrigatorio">Origem:</label>
           <div class="input-with-suggestions">
             <input type="text" id="origem" placeholder="Digite a cidade de origem" class="campo-obrigatorio" required>
             <div id="origem-suggestions" class="suggestions hidden"></div>
           </div>
 
-          <label for="destino" class="obrigatorio">Destino (Cidade/UF):</label>
+          <label for="destino" class="obrigatorio">Destino:</label>
           <div class="input-with-suggestions">
             <input type="text" id="destino" placeholder="Digite a cidade de destino" class="campo-obrigatorio" required>
             <div id="destino-suggestions" class="suggestions hidden"></div>
@@ -700,7 +797,7 @@
           <input type="number" id="valorProdutos" placeholder="Digite o valor total dos produtos">
 
           <label for="valorNota">Valor Total da Nota Fiscal (R$):</label>
-          <input type="number" id="valorNota" placeholder="Digite o valor total da nota fiscal">
+          <input type="number" id="valorNota" placeholder="Digite the valor total da nota fiscal">
 
           <label for="precoUnitario">Preço Unitário (R$):</label>
           <input type="number" id="precoUnitario" placeholder="Digite o preço unitário">
@@ -894,6 +991,7 @@
     let pesoCarga = 0;
     let percentualFrete = 0;
     let fretePorTonelada = 0;
+    let cotacaoEditandoId = null;
 
     // Função para salvar cotação no GitHub (simulado com localStorage)
     function salvarCotacaoNoGitHub() {
@@ -903,7 +1001,7 @@
       }
       
       const cotacao = {
-        id: Date.now(),
+        id: cotacaoEditandoId || Date.now(),
         data: new Date().toLocaleString('pt-BR'),
         ordemFrete: ordemFreteValor,
         prestador: prestadorValor,
@@ -922,14 +1020,31 @@
       
       // Simular salvamento no GitHub (usando localStorage como exemplo)
       let cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
-      cotacoesSalvas.push(cotacao);
+      
+      if (cotacaoEditandoId) {
+        // Editar cotação existente
+        const index = cotacoesSalvas.findIndex(c => c.id === cotacaoEditandoId);
+        if (index !== -1) {
+          cotacoesSalvas[index] = cotacao;
+        }
+      } else {
+        // Adicionar nova cotação
+        cotacoesSalvas.push(cotacao);
+      }
+      
       localStorage.setItem('cotacoesFrete', JSON.stringify(cotacoesSalvas));
       
       // Feedback para o usuário
-      alert('Cotação salva com sucesso!');
+      alert(`Cotação ${cotacaoEditandoId ? 'atualizada' : 'salva'} com sucesso!`);
+      
+      // Limpar ID de edição
+      cotacaoEditandoId = null;
       
       // Atualizar a lista de cotações
       carregarCotacoesSalvas();
+      
+      // Voltar para a visualização normal
+      calcularFrete();
     }
 
     // Função para carregar cotações salvas
@@ -952,12 +1067,131 @@
             <p>Frete: R$ ${formatarNumeroBrasileiro(cotacao.frete)}</p>
             <p>${cotacao.ordemFrete ? 'Ordem: ' + cotacao.ordemFrete : ''}</p>
             <p>${cotacao.prestador ? 'Prestador: ' + cotacao.prestador : ''}</p>
+            <div class="cotacao-actions">
+              <button class="cotacao-action-btn edit-btn" onclick="editarCotacao(${cotacao.id})">
+                <span class="material-icons" style="font-size: 14px;">edit</span> Editar
+              </button>
+              <button class="cotacao-action-btn delete-btn" onclick="excluirCotacao(${cotacao.id})">
+                <span class="material-icons" style="font-size: 14px;">delete</span> Excluir
+              </button>
+            </div>
           </div>
         `;
       });
       html += '</div>';
       
       listaCotacoes.innerHTML = html;
+    }
+
+    // Função para editar cotação
+    function editarCotacao(id) {
+      const cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
+      const cotacao = cotacoesSalvas.find(c => c.id === id);
+      
+      if (!cotacao) {
+        alert('Cotação não encontrada!');
+        return;
+      }
+      
+      // Preencher os campos do formulário com os dados da cotação
+      document.getElementById('ordemFrete').value = cotacao.ordemFrete || '';
+      document.getElementById('prestador').value = cotacao.prestador || '';
+      document.getElementById('nfs').value = cotacao.nfs || '';
+      document.getElementById('origem').value = cotacao.origem || '';
+      document.getElementById('destino').value = cotacao.destino || '';
+      document.getElementById('frete').value = formatarNumeroBrasileiro(cotacao.frete);
+      document.getElementById('valorTotal').value = formatarNumeroBrasileiro(cotacao.valorTotalNota);
+      document.getElementById('kms').value = cotacao.kms;
+      document.getElementById('peso').value = cotacao.pesoCarga;
+      
+      // Preencher as variáveis globais
+      origemValor = cotacao.origem;
+      destinoValor = cotacao.destino;
+      kmsValor = cotacao.kms;
+      fretePorKmValor = cotacao.fretePorKm;
+      freteValor = cotacao.frete;
+      cotacaoImageData = cotacao.imagem;
+      ordemFreteValor = cotacao.ordemFrete;
+      prestadorValor = cotacao.prestador;
+      nfsValor = cotacao.nfs;
+      valorTotalNota = cotacao.valorTotalNota;
+      pesoCarga = cotacao.pesoCarga;
+      percentualFrete = cotacao.percentualFrete;
+      fretePorTonelada = cotacao.fretePorTonelada;
+      cotacaoEditandoId = cotacao.id;
+      
+      // Mostrar a seção de frete
+      mostrarSeção('frete-container');
+      
+      // Calcular e exibir os resultados
+      document.getElementById('resultado').innerHTML = `
+        <div class="origem-destino">
+          <h3>Origem | Destino:</h3>
+          <p>${origemValor} <span class="rota-seta">→</span> ${destinoValor}</p>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+            <span class="material-icons">save</span> Atualizar Cotação
+          </button>
+          <button class="cotacao" onclick="exibirCotacao()">
+            <span class="material-icons">request_quote</span> Exibir Cotação
+          </button>
+        </div>
+        
+        <div class="section-title">Dados Informados</div>
+        <div class="cards">
+          <div class="card">
+            <h3>Valor da Nota</h3>
+            <p>R$ ${formatarNumeroBrasileiro(valorTotalNota)}</p>
+          </div>
+          <div class="card">
+            <h3>Peso da Carga</h3>
+            <p>${formatarNumeroBrasileiro(pesoCarga, 2)} kg</p>
+          </div>
+          <div class="card">
+            <h3>KM Rodados</h3>
+            <p>${formatarNumeroBrasileiro(kmsValor, 0)} km</p>
+          </div>
+        </div>
+        
+        <div class="section-title">Resultados do Cálculo</div>
+        <div class="cards">
+          <div class="card">
+            <h3>Valor do Frete</h3>
+            <p>R$ ${formatarNumeroBrasileiro(freteValor)}</p>
+          </div>
+          <div class="card">
+            <h3>Percentual</h3>
+            <p>${formatarNumeroBrasileiro(percentualFrete, 2)}%</p>
+          </div>
+          <div class="card">
+            <h3>Frete por KM</h3>
+            <p>R$ ${formatarNumeroBrasileiro(fretePorKmValor)}</p>
+          </div>
+          <div class="card">
+            <h3>Frete por Tonelada</h3>
+            <p>R$ ${formatarNumeroBrasileiro(fretePorTonelada)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Função para excluir cotação
+    function excluirCotacao(id) {
+      if (!confirm('Tem certeza que deseja excluir esta cotação?')) {
+        return;
+      }
+      
+      const cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
+      const novasCotacoes = cotacoesSalvas.filter(c => c.id !== id);
+      
+      localStorage.setItem('cotacoesFrete', JSON.stringify(novasCotacoes));
+      
+      // Atualizar a lista de cotações
+      carregarCotacoesSalvas();
+      
+      alert('Cotação excluída com sucesso!');
     }
 
     // Função para exportar para XLSX
@@ -969,7 +1203,7 @@
         return;
       }
       
-      // Preparar dados para a planilha
+      // Preparar dados para la planilha
       const dados = cotacoesSalvas.map(cotacao => ({
         'Data': cotacao.data,
         'Ordem de Frete': cotacao.ordemFrete || '',
@@ -1107,7 +1341,7 @@
       document.getElementById('image-paste-area').classList.remove('hidden');
     }
 
-    // Função para exportar cotação para PDF
+    // Função para exportar cotação para PDF (alta qualidade)
     function exportarCotacaoPDF() {
       // Criar um clone do conteúdo da cotação para o PDF
       const cotacaoContent = document.createElement('div');
@@ -1116,6 +1350,8 @@
       cotacaoContent.style.backgroundColor = 'white';
       cotacaoContent.style.color = '#333';
       cotacaoContent.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+      cotacaoContent.style.width = '794px'; // A4 width in pixels at 96dpi
+      cotacaoContent.style.boxSizing = 'border-box';
       
       // Adicionar cabeçalho
       cotacaoContent.innerHTML = `
@@ -1165,7 +1401,7 @@
       if (cotacaoImageData) {
         cotacaoContent.innerHTML += `
           <div style="text-align: center; margin-top: 20px;">
-            <img src="${cotacaoImageData}" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 1px solid #ddd;" alt="Imagem da cotação">
+            <img src="${cotacaoImageData}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #ddd;" alt="Imagem da cotação">
           </div>
         `;
       }
@@ -1173,37 +1409,97 @@
       // Adicionar ao documento temporariamente
       document.body.appendChild(cotacaoContent);
       
-      // Gerar PDF
+      // Gerar PDF em alta qualidade
       html2canvas(cotacaoContent, {
-        scale: 2,
+        scale: 2, // Maior escala para melhor qualidade
         useCORS: true,
-        logging: false
+        logging: false,
+        backgroundColor: '#ffffff'
       }).then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         const pdf = new jsPDF('p', 'mm', 'a4');
         const imgWidth = 210; // A4 width in mm
-        const pageHeight = 295; // A4 height in mm
         const imgHeight = canvas.height * imgWidth / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+        
+        // Centralizar verticalmente se a imagem for menor que a página
+        const heightLeft = imgHeight;
+        const position = 0;
         
         pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-        
-        // Adicionar páginas adicionais se necessário
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
         
         // Salvar o PDF
-        pdf.save(`Cotação ${origemValor} → ${destinoValor} - Ordem de frete Nº ${ordemFreteValor}.pdf`);
+        pdf.save(`cotacao_${origemValor}_${destinoValor}.pdf`);
         
         // Remover o conteúdo temporário
         document.body.removeChild(cotacaoContent);
       });
+    }
+
+    // Função para exportar resultado geral como PDF
+    function exportarResultadoGeralPDF() {
+      const resultadoElement = document.getElementById('resultado');
+      
+      if (!resultadoElement || resultadoElement.innerHTML === '') {
+        alert('Não há resultados para exportar.');
+        return;
+      }
+      
+      // Criar um clone do resultado
+      const clone = resultadoElement.cloneNode(true);
+      
+      // Remover botões do clone
+      const botoes = clone.querySelectorAll('button');
+      botoes.forEach(botao => botao.remove());
+      
+      // Estilizar o clone
+      clone.style.padding = '20px';
+      clone.style.backgroundColor = 'white';
+      clone.style.width = '794px'; // A4 width in pixels at 96dpi
+      clone.style.boxSizing = 'border-box';
+      
+      // Adicionar título
+      const titulo = document.createElement('div');
+      titulo.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #145a32; font-size: 24px; margin-bottom: 5px;">Resultado do Cálculo de Frete</h1>
+          <p style="color: #666; font-size: 14px;">${new Date().toLocaleDateString('pt-BR')}</p>
+        </div>
+      `;
+      clone.insertBefore(titulo, clone.firstChild);
+      
+      // Adicionar ao documento temporariamente
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      document.body.appendChild(clone);
+      
+      // Gerar PDF
+      html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`resultado_frete_${origemValor}_${destinoValor}.pdf`);
+        
+        // Remover o clone
+        document.body.removeChild(clone);
+      });
+    }
+
+    // Função para ocultar/mostrar os botões do topo
+    function toggleTopButtons(show) {
+      const topButtons = document.getElementById('top-buttons');
+      if (show) {
+        topButtons.classList.remove('hidden');
+      } else {
+        topButtons.classList.add('hidden');
+      }
     }
 
     // FRETE
@@ -1215,7 +1511,7 @@
       }
 
       ordemFreteValor = document.getElementById('ordemFrete').value;
-      prestadorValor = document.getElementById('prestador').value.toUpperCase();
+      prestadorValor = document.getElementById('prestador').value;
       nfsValor = document.getElementById('nfs').value;
       origemValor = document.getElementById('origem').value.toUpperCase();
       destinoValor = document.getElementById('destino').value.toUpperCase();
@@ -1243,15 +1539,6 @@
         <div class="origem-destino">
           <h3>Origem | Destino:</h3>
           <p>${origemValor} <span class="rota-seta">→</span> ${destinoValor}</p>
-        </div>
-        
-        <div class="action-buttons">
-          <button class="action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
-            <span class="material-icons">save</span> Salvar Cotação
-          </button>
-          <button class="cotacao" onclick="exibirCotacao()">
-            <span class="material-icons">request_quote</span> Exibir Cotação
-          </button>
         </div>
         
         <div class="section-title">Dados Informados</div>
@@ -1290,29 +1577,32 @@
           </div>
         </div>
       `;
+      
+      // Mostrar os botões do topo
+      toggleTopButtons(true);
     }
 
     // EXIBIR COTAÇÃO
     function exibirCotacao() {
+      // Ocultar os botões do topo
+      toggleTopButtons(false);
+      
       document.getElementById('resultado').innerHTML = `
+        <div class="cotacao-top-buttons">
+          <button class="cotacao-top-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+            <span class="material-icons">save</span> ${cotacaoEditandoId ? 'Atualizar' : 'Salvar'} Cotação
+          </button>
+          <button class="cotacao-top-btn report-btn" onclick="exportarCotacaoPDF()">
+            <span class="material-icons">picture_as_pdf</span> Exportar PDF
+          </button>
+          <button class="cotacao-top-btn export-btn" onclick="calcularFrete()">
+            <span class="material-icons">arrow_back</span> Voltar
+          </button>
+        </div>
+        
         <div class="origem-destino">
           <h3>Origem | Destino:</h3>
           <p>${origemValor} <span class="rota-seta">→</span> ${destinoValor}</p>
-        </div>
-        
-        <div class="action-buttons">
-          <button class="action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
-            <span class="material-icons">save</span> Salvar Cotação
-          </button>
-          <button class="action-btn export-btn" onclick="exportarCotacaoIndividual()">
-            <span class="material-icons">description</span> Exportar XLSX
-          </button>
-          <button class="action-btn report-btn" onclick="exportarCotacaoPDF()">
-            <span class="material-icons">picture_as_pdf</span> Exportar PDF
-          </button>
-          <button class="cotacao" onclick="calcularFrete()">
-            <span class="material-icons">arrow_back</span> Voltar
-          </button>
         </div>
         
         <div class="ordem-frete-header">
@@ -1520,6 +1810,11 @@
       // Se for a seção de relatórios, carregar as cotações
       if (id === 'relatorio-container') {
         carregarCotacoesSalvas();
+      }
+      
+      // Se for a seção de frete, mostrar os botões do topo
+      if (id === 'frete-container') {
+        toggleTopButtons(true);
       }
     }
   </script>
