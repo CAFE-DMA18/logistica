@@ -724,7 +724,7 @@
           <span class="material-icons">picture_as_pdf</span> Exportar KPI
         </button>
         <button class="top-action-btn export-btn" onclick="exibirCotacao()">
-          <span class="material-icons">request_quote</span> Exibir Cotação
+          <span class="material-icons">request_quote</span> Exibir Cotação Agregado
         </button>
       </div>
       
@@ -1511,7 +1511,7 @@
       }
 
       ordemFreteValor = document.getElementById('ordemFrete').value;
-      prestadorValor = document.getElementById('prestador').value;
+      prestadorValor = document.getElementById('prestador').value.toUpperCase();
       nfsValor = document.getElementById('nfs').value;
       origemValor = document.getElementById('origem').value.toUpperCase();
       destinoValor = document.getElementById('destino').value.toUpperCase();
@@ -1820,3 +1820,4 @@
   </script>
 </body>
 </html>
+
