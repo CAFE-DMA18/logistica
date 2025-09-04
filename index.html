@@ -11,6 +11,9 @@
   <!-- jsPDF para exportação PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF Autotable para tabelas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -1341,98 +1344,97 @@
       document.getElementById('image-paste-area').classList.remove('hidden');
     }
 
-    // Função para exportar cotação para PDF (alta qualidade)
+    // Função para exportar cotação para PDF (usando jsPDF.html)
     function exportarCotacaoPDF() {
-      // Criar um clone do conteúdo da cotação para o PDF
-      const cotacaoContent = document.createElement('div');
-      cotacaoContent.id = 'pdf-content';
-      cotacaoContent.style.padding = '20px';
-      cotacaoContent.style.backgroundColor = 'white';
-      cotacaoContent.style.color = '#333';
-      cotacaoContent.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-      cotacaoContent.style.width = '794px'; // A4 width in pixels at 96dpi
-      cotacaoContent.style.boxSizing = 'border-box';
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
       
       // Adicionar cabeçalho
-      cotacaoContent.innerHTML = `
-        <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #145a32; font-size: 24px; margin-bottom: 5px;">Cotação de Frete</h1>
-          <p style="color: #666; font-size: 14px;">${new Date().toLocaleDateString('pt-BR')}</p>
-        </div>
-        
-        <div style="background: #f8f9f6; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; border: 1px solid #ddd;">
-          <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #145a32;">Origem | Destino:</h3>
-          <p style="font-size: 18px; font-weight: bold; margin: 0; text-transform: uppercase;">${origemValor} → ${destinoValor}</p>
-        </div>
-        
-        ${ordemFreteValor ? `
-        <div style="text-align: center; margin-bottom: 20px;">
-          <div style="background-color: #f1c40f; color: #333; display: inline-block; padding: 5px 12px; border-radius: 20px; font-weight: bold;">
-            Ordem de Frete Nº: ${ordemFreteValor}
-          </div>
-        </div>
-        ` : ''}
-        
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
-          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
-            <h3 style="margin: 0; font-size: 14px; color: #145a32;">Prestador</h3>
-            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">${prestadorValor || 'Não informado'}</p>
-          </div>
-          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
-            <h3 style="margin: 0; font-size: 14px; color: #145a32;">NFs</h3>
-            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">${nfsValor || 'Não informado'}</p>
-          </div>
-          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
-            <h3 style="margin: 0; font-size: 14px; color: #145a32;">KM Rodados</h3>
-            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">${formatarNumeroBrasileiro(kmsValor, 0)} km</p>
-          </div>
-          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
-            <h3 style="margin: 0; font-size: 14px; color: #145a32;">Frete por KM</h3>
-            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">R$ ${formatarNumeroBrasileiro(fretePorKmValor)}</p>
-          </div>
-          <div style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center;">
-            <h3 style="margin: 0; font-size: 14px; color: #145a32;">Valor do Frete</h3>
-            <p style="margin: 8px 0 0; font-size: 16px; font-weight: bold;">R$ ${formatarNumeroBrasileiro(freteValor)}</p>
-          </div>
-        </div>
-      `;
+      doc.setFontSize(20);
+      doc.setTextColor(20, 90, 50); // #145a32
+      doc.text('Cotação de Frete', 105, 20, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.setTextColor(102, 102, 102);
+      doc.text(new Date().toLocaleDateString('pt-BR'), 105, 27, { align: 'center' });
+      
+      // Adicionar informações da rota
+      doc.setFontSize(14);
+      doc.setTextColor(20, 90, 50);
+      doc.text('Origem | Destino:', 105, 40, { align: 'center' });
+      
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${origemValor} x ${destinoValor}`, 105, 47, { align: 'center' });
+      
+      // Adicionar ordem de frete se existir
+      if (ordemFreteValor) {
+        doc.setFillColor(241, 196, 15); // #f1c40f
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.roundedRect(75, 53, 60, 7, 3, 3, 'F');
+        doc.text(`Ordem de Frete Nº: ${ordemFreteValor}`, 105, 57, { align: 'center' });
+      }
+      
+      // Adicionar informações da cotação em formato de tabela
+      const tableColumn = ["Informação", "Dados informados"];
+      const tableRows = [];
+      
+      tableRows.push(["Prestador", prestadorValor || "Não informado"]);
+      tableRows.push(["NFs", nfsValor || "Não informado"]);
+      tableRows.push(["KM Rodados", `${formatarNumeroBrasileiro(kmsValor, 0)} km`]);
+      tableRows.push(["Frete por KM", `R$ ${formatarNumeroBrasileiro(fretePorKmValor)}`]);
+      tableRows.push(["Valor do Frete", `R$ ${formatarNumeroBrasileiro(freteValor)}`]);
+      
+      // Adicionar a tabela
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 65,
+        theme: 'grid',
+        styles: {
+          fontSize: 10,
+          cellPadding: 3,
+          valign: 'middle'
+        },
+        headStyles: {
+          fillColor: [20, 90, 50],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        columnStyles: {
+          0: { cellWidth: 40, fontStyle: 'bold' },
+          1: { cellWidth: 'auto' }
+        }
+      });
+      
+      // Obter a posição Y final da tabela
+      const finalY = doc.lastAutoTable.finalY + 10;
+      
+      // Adicionar título "Roteiro:"
+      doc.setFontSize(14);
+      doc.setTextColor(20, 90, 50);
+      doc.text('Roteiro:', 20, finalY);
       
       // Adicionar imagem se existir
       if (cotacaoImageData) {
-        cotacaoContent.innerHTML += `
-          <div style="text-align: center; margin-top: 20px;">
-            <img src="${cotacaoImageData}" style="max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #ddd;" alt="Imagem da cotação">
-          </div>
-        `;
+        // Calcular dimensões para manter proporção 16:9
+        const imgWidth = 170; // largura máxima
+        const imgHeight = imgWidth * (9/16); // altura proporcional
+        
+        // Adicionar a imagem
+        doc.addImage(cotacaoImageData, 'JPEG', 20, finalY + 5, imgWidth, imgHeight);
+      } else {
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Nenhuma imagem de roteiro disponível', 20, finalY + 10);
       }
       
-      // Adicionar ao documento temporariamente
-      document.body.appendChild(cotacaoContent);
-      
-      // Gerar PDF em alta qualidade
-      html2canvas(cotacaoContent, {
-        scale: 2, // Maior escala para melhor qualidade
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      }).then(canvas => {
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210; // A4 width in mm
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        
-        // Centralizar verticalmente se a imagem for menor que a página
-        const heightLeft = imgHeight;
-        const position = 0;
-        
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        
-        // Salvar o PDF
-        pdf.save(`cotacao_${origemValor}_${destinoValor}.pdf`);
-        
-        // Remover o conteúdo temporário
-        document.body.removeChild(cotacaoContent);
-      });
+      // Salvar o PDF
+      doc.save(`Cotação ${origemValor} → ${destinoValor}${ordemFreteValor ? ' - Ordem ' + ordemFreteValor : ''}.pdf`);
     }
 
     // Função para exportar resultado geral como PDF
@@ -1454,7 +1456,7 @@
       // Estilizar o clone
       clone.style.padding = '20px';
       clone.style.backgroundColor = 'white';
-      clone.style.width = '794px'; // A4 width in pixels at 96dpi
+      clone.style.width = '850px'; // A4 width in pixels at 96dpi
       clone.style.boxSizing = 'border-box';
       
       // Adicionar título
@@ -1535,6 +1537,39 @@
       // Recolher o formulário após o cálculo
       collapseForm('frete');
 
+      // Determinar quais botões mostrar
+      let botoesTopo = '';
+      if (cotacaoEditandoId) {
+        // Modo edição
+        botoesTopo = `
+          <button class="top-action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+            <span class="material-icons">save</span> Atualizar
+          </button>
+          <button class="top-action-btn report-btn" onclick="exportarResultadoGeralPDF()">
+            <span class="material-icons">picture_as_pdf</span> Exportar KPI
+          </button>
+          <button class="top-action-btn export-btn" onclick="exibirCotacao()">
+            <span class="material-icons">request_quote</span> Exibir Cotação
+          </button>
+        `;
+      } else {
+        // Nova cotação
+        botoesTopo = `
+          <button class="top-action-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+            <span class="material-icons">save</span> Salvar
+          </button>
+          <button class="top-action-btn report-btn" onclick="exportarResultadoGeralPDF()">
+            <span class="material-icons">picture_as_pdf</span> Exportar KPI
+          </button>
+          <button class="top-action-btn export-btn" onclick="exibirCotacao()">
+            <span class="material-icons">request_quote</span> Exibir Cotação
+          </button>
+        `;
+      }
+
+      document.getElementById('top-buttons').innerHTML = botoesTopo;
+      toggleTopButtons(true);
+
       document.getElementById('resultado').innerHTML = `
         <div class="origem-destino">
           <h3>Origem | Destino:</h3>
@@ -1577,27 +1612,44 @@
           </div>
         </div>
       `;
-      
-      // Mostrar os botões do topo
-      toggleTopButtons(true);
     }
 
-    // EXIBIR COTAÇÃO
+     // EXIBIR COTAÇÃO - Modificado para exibir botões diferentes conforme o modo
     function exibirCotacao() {
       // Ocultar os botões do topo
       toggleTopButtons(false);
       
-      document.getElementById('resultado').innerHTML = `
-        <div class="cotacao-top-buttons">
-          <button class="cotacao-top-btn save-btn" onclick="salvarCotacaoNoGitHub()">
-            <span class="material-icons">save</span> ${cotacaoEditandoId ? 'Atualizar' : 'Salvar'} Cotação
+      // Determinar quais botões mostrar com base no modo (edição ou nova)
+      let botoesHTML = '';
+      
+      if (cotacaoEditandoId) {
+        // Modo edição: Voltar e Exportar Cotação
+        botoesHTML = `
+          <button class="cotacao-top-btn export-btn" onclick="calcularFrete()">
+            <span class="material-icons">arrow_back</span> Voltar
           </button>
           <button class="cotacao-top-btn report-btn" onclick="exportarCotacaoPDF()">
             <span class="material-icons">picture_as_pdf</span> Exportar Cotação
           </button>
+        `;
+      } else {
+        // Modo nova cotação: Voltar, Salvar e Exportar Cotação
+        botoesHTML = `
           <button class="cotacao-top-btn export-btn" onclick="calcularFrete()">
             <span class="material-icons">arrow_back</span> Voltar
           </button>
+          <button class="cotacao-top-btn save-btn" onclick="salvarCotacaoNoGitHub()">
+            <span class="material-icons">save</span> Salvar Cotação
+          </button>
+          <button class="cotacao-top-btn report-btn" onclick="exportarCotacaoPDF()">
+            <span class="material-icons">picture_as_pdf</span> Exportar Cotação
+          </button>
+        `;
+      }
+      
+      document.getElementById('resultado').innerHTML = `
+        <div class="cotacao-top-buttons">
+          ${botoesHTML}
         </div>
         
         <div class="origem-destino">
@@ -1820,4 +1872,3 @@
   </script>
 </body>
 </html>
-
