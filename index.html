@@ -1395,7 +1395,7 @@
       doc.setFontSize(16);
       doc.setTextColor(0, 0, 0);
       const rotaTexto = `${origemValor} x ${destinoValor}`;
-      const alturaRota = dividirTextoParaPDF(doc, rotaTexto, 20, 47, 170, 8);
+      const alturaRota = dividirTextoParaPDF(doc, rotaTexto, 20, 47, 170, 8, { align: 'center' });
       
       // Adicionar ordem de frete se existir
       let yPos = 47 + alturaRota + 5;
@@ -1883,3 +1883,4 @@
   </script>
 </body>
 </html>
+
