@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -839,6 +840,40 @@
     // Inicializar jsPDF
     window.jsPDF = window.jspdf.jsPDF;
 
+// Função para comprimir imagem e converter para Base64
+function comprimirImagemParaBase64(imagemSrc, callback, qualidade = 0.7, larguraMaxima = 800) {
+  const img = new Image();
+  img.onload = function() {
+    // Calcular novas dimensões mantendo a proporção
+    let largura = img.width;
+    let altura = img.height;
+    
+    if (largura > larguraMaxima) {
+      altura = (altura * larguraMaxima) / largura;
+      largura = larguraMaxima;
+    }
+    
+    // Criar canvas para redimensionar e comprimir a imagem
+    const canvas = document.createElement('canvas');
+    canvas.width = largura;
+    canvas.height = altura;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, largura, altura);
+    
+    // Converter para Base64 com compressão
+    const base64 = canvas.toDataURL('image/jpeg', qualidade);
+    callback(base64);
+  };
+  
+  img.onerror = function() {
+    console.error('Erro ao carregar a imagem para compressão');
+    callback(null);
+  };
+  
+  img.src = imagemSrc;
+}
+
     // Base de dados de cidades brasileiras (exemplo simplificado)
     const cidadesBrasileiras = [
       "São Paulo/SP", "Rio de Janeiro/RJ", "Belo Horizonte/MG", "Porto Alegre/RS",
@@ -1023,58 +1058,70 @@
     let cotacaoEditandoId = null;
 
     // Função para salvar cotação no GitHub (simulado com localStorage)
-    function salvarCotacaoNoGitHub() {
-      if (!origemValor || !destinoValor) {
-        alert('Calcule primeiro o frete antes de salvar.');
-        return;
-      }
-      
-      const cotacao = {
-        id: cotacaoEditandoId || Date.now(),
-        data: new Date().toLocaleString('pt-BR'),
-        ordemFrete: ordemFreteValor,
-        prestador: prestadorValor,
-        nfs: nfsValor,
-        origem: origemValor,
-        destino: destinoValor,
-        kms: kmsValor,
-        frete: freteValor,
-        fretePorKm: fretePorKmValor,
-        valorTotalNota: valorTotalNota,
-        pesoCarga: pesoCarga,
-        percentualFrete: percentualFrete,
-        fretePorTonelada: fretePorTonelada,
-        imagem: cotacaoImageData
-      };
-      
-      // Simular salvamento no GitHub (usando localStorage como exemplo)
-      let cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
-      
-      if (cotacaoEditandoId) {
-        // Editar cotação existente
-        const index = cotacoesSalvas.findIndex(c => c.id === cotacaoEditandoId);
-        if (index !== -1) {
-          cotacoesSalvas[index] = cotacao;
-        }
-      } else {
-        // Adicionar nova cotação
-        cotacoesSalvas.push(cotacao);
-      }
-      
-      localStorage.setItem('cotacoesFrete', JSON.stringify(cotacoesSalvas));
-      
-      // Feedback para o usuário
-      alert(`Cotação ${cotacaoEditandoId ? 'atualizada' : 'salva'} com sucesso!`);
-      
-      // Limpar ID de edição
-      cotacaoEditandoId = null;
-      
-      // Atualizar a lista de cotações
-      carregarCotacoesSalvas();
-      
-      // Voltar para a visualização normal
-      calcularFrete();
+function salvarCotacaoNoGitHub() {
+  if (!origemValor || !destinoValor) {
+    alert('Calcule primeiro o frete antes de salvar.');
+    return;
+  }
+  
+  // Se houver uma imagem, comprimi-la antes de salvar
+  if (cotacaoImageData) {
+    comprimirImagemParaBase64(cotacaoImageData, function(imagemComprimida) {
+      finalizarSalvamentoCotacao(imagemComprimida);
+    });
+  } else {
+    finalizarSalvamentoCotacao(null);
+  }
+}
+
+// Função final para salvar a cotação (após compressão da imagem)
+function finalizarSalvamentoCotacao(imagemComprimida) {
+  const cotacao = {
+    id: cotacaoEditandoId || Date.now(),
+    data: new Date().toLocaleString('pt-BR'),
+    ordemFrete: ordemFreteValor,
+    prestador: prestadorValor,
+    nfs: nfsValor,
+    origem: origemValor,
+    destino: destinoValor,
+    kms: kmsValor,
+    frete: freteValor,
+    fretePorKm: fretePorKmValor,
+    valorTotalNota: valorTotalNota,
+    pesoCarga: pesoCarga,
+    percentualFrete: percentualFrete,
+    fretePorTonelada: fretePorTonelada,
+    imagem: imagemComprimida  // Usar a imagem comprimida
+  };
+  
+  // Simular salvamento no GitHub (usando localStorage como exemplo)
+  let cotacoesSalvas = JSON.parse(localStorage.getItem('cotacoesFrete')) || [];
+  
+  if (cotacaoEditandoId) {
+    // Editar cotação existente
+    const index = cotacoesSalvas.findIndex(c => c.id === cotacaoEditandoId);
+    if (index !== -1) {
+      cotacoesSalvas[index] = cotacao;
     }
+  } else {
+    // Adicionar nova cotação
+    cotacoesSalvas.push(cotacao);
+  }
+  
+  localStorage.setItem('cotacoesFrete', JSON.stringify(cotacoesSalvas));
+  
+  // Feedback para o usuário
+  alert(`Cotação ${cotacaoEditandoId ? 'atualizada' : 'salva'} com sucesso!${imagemComprimida ? ' (Imagem comprimida)' : ''}`);
+  
+  // Limpar ID de edição
+  cotacaoEditandoId = null;
+  
+  // Atualizar a lista de cotações
+  carregarCotacoesSalvas();
+  
+  // Voltar para a visualização normal
+  calcularFrete();
+}
 
     // Função para carregar cotações salvas
     function carregarCotacoesSalvas() {
@@ -1322,29 +1369,33 @@
     }
 
     // Função para colar imagem do clipboard
-    function handleImagePaste(e) {
-      // Verificar se há itens de imagem no clipboard
-      const items = e.clipboardData.items;
+function handleImagePaste(e) {
+  // Verificar se há itens de imagem no clipboard
+  const items = e.clipboardData.items;
+  
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      const blob = items[i].getAsFile();
+      const reader = new FileReader();
       
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const blob = items[i].getAsFile();
-          const reader = new FileReader();
-          
-          reader.onload = function(event) {
-            cotacaoImageData = event.target.result;
-            updateCotacaoImage();
-            
-            // Esconder a área de colagem após a colagem
-            document.getElementById('image-paste-area').classList.add('hidden');
-          };
-          
-          reader.readAsDataURL(blob);
-          e.preventDefault();
-          break;
-        }
-      }
+      reader.onload = function(event) {
+        // Agora a imagem será comprimida automaticamente quando for salva
+        cotacaoImageData = event.target.result;
+        updateCotacaoImage();
+        
+        // Esconder a área de colagem após a colagem
+        document.getElementById('image-paste-area').classList.add('hidden');
+        
+        // Mostrar mensagem informando que a imagem será comprimida
+        alert('Imagem colada com sucesso! Será comprimida automaticamente ao salvar.');
+      };
+      
+      reader.readAsDataURL(blob);
+      e.preventDefault();
+      break;
     }
+  }
+}
     
     // Atualizar a exibição da imagem na cotação
     function updateCotacaoImage() {
@@ -1883,4 +1934,3 @@
   </script>
 </body>
 </html>
-
